@@ -8,21 +8,34 @@
 #include <locale.h>
 #include <math.h>
 
-void input(const char* name, double* var)
+void terminate(const char* message)
 {
-    printf("%s %s%s", "Введите значение переменной", name, ": ");
-    scanf("%lf", &(*var));
+    puts(message);
+    exit(EXIT_SUCCESS);
+}
+
+double input(const char* name)
+{
+    printf("Введите значение переменной %s: ", name);
+    char varStr[32];
+    fgets(varStr, 32, stdin);
+
+    double var = atof(varStr);
+    if (var == 0.0 && varStr[0] != '0')
+    {
+        terminate("Ошибка ввода! Неверно введено число.");
+    }
+
+    return var;
 }
 
 int main()
 {
     setlocale(LC_ALL, "rus");
-
-    // Ввод значений переменных x, y и z.
-    double x, y, z;
-    input("x", &x);
-    input("y", &y);
-    input("z", &z);
+    
+    double x = input("x");
+    double y = input("y");
+    double z = input("z");
 
     // Вычисление первой части выражения
     double negSqrtAbsX = -sqrt(fabs(x));
@@ -38,9 +51,7 @@ int main()
     // Получение результата
     double alpha = part1 * part2 + part3;
 
-    printf("%s %lf",
-           "Результат вычисления выражения из условия:",
-           alpha);
+    printf("Результат вычисления выражения из условия: %lf\n", alpha);
 
     return EXIT_SUCCESS;
 }
