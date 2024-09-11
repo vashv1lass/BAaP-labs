@@ -14,16 +14,14 @@ void terminate(const char* message)
     exit(EXIT_SUCCESS);
 }
 
-double input(const char* name)
+double input(const char* message)
 {
-    printf("Введите значение переменной %s: ", name);
-    char varStr[32];
-    fgets(varStr, 32, stdin);
+    puts(message);
 
-    double var = atof(varStr);
-    if (var == 0.0 && varStr[0] != '0')
+    double var;
+    if (!scanf("%lf", &var))
     {
-        terminate("Ошибка ввода! Неверно введено число.");
+        terminate("Проверьте корректность введённых данных!");
     }
 
     return var;
@@ -32,23 +30,19 @@ double input(const char* name)
 int main()
 {
     setlocale(LC_ALL, "rus");
-    
-    double x = input("x");
-    double y = input("y");
-    double z = input("z");
 
-    // Вычисление первой части выражения
+    double x = input("Введите значение переменной x (вещественное число): ");
+    double y = input("Введите значение переменной y (вещественное число): ");
+    double z = input("Введите значение переменной z (вещественное число): ");
+
     double negSqrtAbsX = -sqrt(fabs(x));
     double part1 = log(pow(y, negSqrtAbsX));
 
-    // Вычисление второй части выражения
     double part2 = x - y / 2;
-
-    // Вычисление третьей части выражения
+    
     double arctgZ = atan(z);
     double part3 = pow(sin(arctgZ), 2);
 
-    // Получение результата
     double alpha = part1 * part2 + part3;
 
     printf("Результат вычисления выражения из условия: %lf\n", alpha);

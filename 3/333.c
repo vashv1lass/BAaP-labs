@@ -63,6 +63,8 @@ SxReturnValue S(double x, double eps)
 
 int main()
 {
+    setlocale(LC_ALL, "rus");
+
     double a, b, h, eps;
     input("a", &a);
     input("b", &b);

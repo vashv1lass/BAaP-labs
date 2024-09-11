@@ -51,6 +51,8 @@ double Y(double x)
 
 int main()
 {
+    setlocale(LC_ALL, "rus");
+    
     double a, b, h;
     int n;
     input("a", "%lf", &a);

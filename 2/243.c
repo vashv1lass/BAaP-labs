@@ -14,16 +14,14 @@ void terminate(const char* message)
     exit(EXIT_SUCCESS);
 }
 
-double input(const char* name)
+double input(const char* message)
 {
-    printf("Введите значение переменной %s: ", name);
-    char varStr[32];
-    fgets(varStr, 32, stdin);
+    puts(message);
 
-    double var = atof(varStr);
-    if (var == 0.0 && varStr[0] != '0')
+    double var;
+    if (!scanf("%lf", &var))
     {
-        terminate("Ошибка ввода! Неверно введено число.");
+        terminate("Проверьте корректность введённых данных!");
     }
 
     return var;
@@ -56,10 +54,10 @@ int main()
 {
     setlocale(LC_ALL, "rus");
 
-    double x = input("x");
-    double y = input("y");
-    double z = input("z");
-    
+    double x = input("Введите значение переменной x (вещественное число): ");
+    double y = input("Введите значение переменной y (вещественное число): ");
+    double z = input("Введите значение переменной z (вещественное число): ");
+
     double numerator = min(z, x) + min(x, y);
     double denominator = pow(max3(x, y, z), 2);
 
@@ -69,7 +67,7 @@ int main()
     }
     double m = numerator / denominator;
 
-    printf("Результат вычисления значения выражения из условия: m=%lf\n", m);
+    printf("Результат вычисления значения выражения из условия: m = %lf\n", m);
 
     return EXIT_SUCCESS;
 }
