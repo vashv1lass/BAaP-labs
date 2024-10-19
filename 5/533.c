@@ -49,7 +49,7 @@ void createMatrix(Matrix* a, int rows, int columns)
 	a->rowCount = rows;
 	a->columnCount = columns;
 	a->data = (int**)malloc(rows * sizeof(int*));
-	for (int i = 0; i < columns; i++)
+	for (int i = 0; i < rows; i++)
 	{
 		a->data[i] = (int*)malloc(columns * sizeof(int));
 	}
