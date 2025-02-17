@@ -82,7 +82,7 @@ int main(void) {
 	Stack *elementsBetween1stAndMin = getNext(sRoot);
 	Stack *minElement = findMin(&sRoot);
 	Stack *elementBeforeMin = getElementBefore(&sRoot, minElement);
-	Stack *elementRemaining = sRoot;
+	Stack *elementsRemaining = sRoot;
 	
 	if (minElement == sRoot || minElement == getNext(sRoot)) {
 		elementsBetween1stAndMin = NULL;
@@ -100,12 +100,15 @@ int main(void) {
 	}
 	
 	puts("\nЭлементы стека, в котором нет таких элементов");
-	while (!isEmpty(elementRemaining)) {
+	while (!isEmpty(elementsRemaining)) {
 		int currentElementValue = 0;
-		elementRemaining = pop(elementRemaining, &currentElementValue);
+		elementsRemaining = pop(elementsRemaining, &currentElementValue);
 		
 		printf("%d ", currentElementValue);
 	}
+	
+	clear(&elementsBetween1stAndMin);
+	clear(&elementsRemaining);
 	
 	return 0;
 }
