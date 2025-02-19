@@ -4,9 +4,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
+#include <locale.h>
+#include <stdlib.h>
 
 #include "Stack.h"
 
+#define INVALID_CHARACTER 2
 #define STRING_BUFFER_MAX_SIZE (1 << 10)
 
 bool isOperation(char c) {
@@ -56,7 +60,7 @@ void toRPN(const char *expr, char *dest) {
 			}
 			
 			operations = pushChar(operations, expr[i]);
-		} else {
+		} else if (expr[i] != ' ') {
 			dest[currentDestIndex++] = expr[i];
 		}
 	}
@@ -120,8 +124,13 @@ void getExpressionVariableNames(const char *expr, char *dest) {
 	size_t currentDestIndex = 0;
 	
 	for (size_t i = 0; i < exprLen; i++) {
-		if (!isOperation(expr[i]) && expr[i] != '(' && expr[i] != ')') {
+		if (islower(expr[i])) {
 			dest[currentDestIndex++] = expr[i];
+		} else if (!isOperation(expr[i]) && expr[i] != '(' && expr[i] != ')' &&
+			expr[i] != ' ')
+		{
+			puts("Неизвестный символ!");
+			exit(INVALID_CHARACTER);
 		}
 	}
 	
@@ -147,13 +156,15 @@ void inputVariables(const char *expr, float *vars) {
 }
 
 int main(void) {
+	setlocale(LC_ALL, "rus");
+	
 	puts("Введите математическое выражение, используя переменные "
 		"(переменные должны быть строчными латинскими буквами) "
 		"и математические операции (\"+\" - \"плюс\", \"-\" - \"минус\", "
 		"\"*\" - \"умножить\", \"/\" - \"разделить\"). Выражение "
 		"записывается без пробелов:");
 	char expression[STRING_BUFFER_MAX_SIZE];
-	scanf("%s", expression);
+	gets(expression);
 	
 	float values[26];
 	inputVariables(expression, values);
