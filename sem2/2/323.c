@@ -65,50 +65,61 @@ Stack *getElementBefore(Stack **s, Stack *element) {
 int main(void) {
 	setlocale(LC_ALL, "rus");
 	
-	size_t n;
-	
-	printf("Введите кол-во элементов списка: ");
-	scanf("%zu", &n);
-	
-	Stack *sRoot = NULL;
-	puts("Введите элементы списка:");
-	for (size_t i = 0; i < n; i++) {
-		int currentElement;
-		scanf("%d", &currentElement);
+	int option = 1;
+	while (option == 1) {
+		puts("Выберите один из вариантов:\n"
+		     "1. Решение индивидуального задания.\n"
+		     "Любое другое число – выход из программы.");
+		scanf("%d", &option);
 		
-		sRoot = push(sRoot, currentElement);
+		if (option == 1) {
+			size_t n;
+			
+			printf("Введите кол-во элементов списка: ");
+			scanf("%zu", &n);
+			
+			Stack *sRoot = NULL;
+			puts("Введите элементы списка:");
+			for (size_t i = 0; i < n; i++) {
+				int currentElement;
+				scanf("%d", &currentElement);
+				
+				sRoot = push(sRoot, currentElement);
+			}
+			
+			Stack *elementsBetween1stAndMin = getNext(sRoot);
+			Stack *minElement = findMin(&sRoot);
+			Stack *elementBeforeMin = getElementBefore(&sRoot, minElement);
+			Stack *elementsRemaining = sRoot;
+			
+			if (minElement == sRoot || minElement == getNext(sRoot)) {
+				elementsBetween1stAndMin = NULL;
+			} else {
+				setNext(sRoot, minElement);
+				setNext(elementBeforeMin, NULL);
+			}
+			
+			puts("Элементы стека, содержащего элементы между вершиной и минимальным элементом стека:");
+			while (!isEmpty(elementsBetween1stAndMin)) {
+				int currentElementValue = 0;
+				elementsBetween1stAndMin = pop(elementsBetween1stAndMin, &currentElementValue);
+				
+				printf("%d ", currentElementValue);
+			}
+			
+			puts("\nЭлементы стека, в котором нет таких элементов");
+			while (!isEmpty(elementsRemaining)) {
+				int currentElementValue = 0;
+				elementsRemaining = pop(elementsRemaining, &currentElementValue);
+				
+				printf("%d ", currentElementValue);
+			}
+			puts("");
+			
+			clear(&elementsBetween1stAndMin);
+			clear(&elementsRemaining);
+		}
 	}
-	
-	Stack *elementsBetween1stAndMin = getNext(sRoot);
-	Stack *minElement = findMin(&sRoot);
-	Stack *elementBeforeMin = getElementBefore(&sRoot, minElement);
-	Stack *elementsRemaining = sRoot;
-	
-	if (minElement == sRoot || minElement == getNext(sRoot)) {
-		elementsBetween1stAndMin = NULL;
-	} else {
-		setNext(sRoot, minElement);
-		setNext(elementBeforeMin, NULL);
-	}
-	
-	puts("Элементы стека, содержащего элементы между вершиной и минимальным элементом стека:");
-	while (!isEmpty(elementsBetween1stAndMin)) {
-		int currentElementValue = 0;
-		elementsBetween1stAndMin = pop(elementsBetween1stAndMin, &currentElementValue);
-		
-		printf("%d ", currentElementValue);
-	}
-	
-	puts("\nЭлементы стека, в котором нет таких элементов");
-	while (!isEmpty(elementsRemaining)) {
-		int currentElementValue = 0;
-		elementsRemaining = pop(elementsRemaining, &currentElementValue);
-		
-		printf("%d ", currentElementValue);
-	}
-	
-	clear(&elementsBetween1stAndMin);
-	clear(&elementsRemaining);
 	
 	return 0;
 }
