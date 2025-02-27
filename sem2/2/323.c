@@ -7,6 +7,25 @@
 
 #include "Stack.h"
 
+void print(Stack **s) {
+	Stack *auxS = NULL;
+	while (!isEmpty(*s)) {
+		int currentValue = 0;
+		*s = pop(*s, &currentValue);
+		
+		auxS = push(auxS, currentValue);
+		
+		printf("%d ", currentValue);
+	}
+	puts("");
+	while (!isEmpty(auxS)) {
+		int currentAuxValue = 0;
+		auxS = pop(auxS, &currentAuxValue);
+		
+		*s = push(*s, currentAuxValue);
+	}
+}
+
 Stack *findMin(Stack **s) {
 	int minValue = INT_MAX;
 	
@@ -62,62 +81,104 @@ Stack *getElementBefore(Stack **s, Stack *element) {
 	return elementBefore;
 }
 
+void reversedCopy(Stack **s, Stack **copy) {
+	clear(&(*copy));
+	
+	Stack *auxS = NULL;
+	while (!isEmpty(*s)) {
+		int currentValue = 0;
+		*s = pop(*s, &currentValue);
+		
+		auxS = push(auxS, currentValue);
+		
+		*copy = push(*copy, currentValue);
+	}
+	
+	while (!isEmpty(auxS)) {
+		int currentAuxValue = 0;
+		auxS = pop(auxS, &currentAuxValue);
+		
+		*s = push(*s, currentAuxValue);
+	}
+}
+
 int main(void) {
 	setlocale(LC_ALL, "rus");
 	
+	Stack *sRoot = NULL;
+	
 	int option = 1;
-	while (option == 1) {
-		puts("Выберите один из вариантов:\n"
-		     "1. Решение индивидуального задания.\n"
-		     "Любое другое число – выход из программы.");
+	while (1 <= option && option <= 4) {
+		puts("Выберите операцию, которую хотите выполнить:\n"
+			 "1. Добавление элемента в стек.\n"
+			 "2. Удаление верхнего элемента из стека.\n"
+			 "3. Просмотр стека.\n"
+			 "4. Решение индивидуального задания.\n"
+			 "Любое другое число – выход из программы.");
 		scanf("%d", &option);
 		
 		if (option == 1) {
-			size_t n;
+			puts("Введите добавляемый элемент:");
 			
-			printf("Введите кол-во элементов списка: ");
-			scanf("%zu", &n);
+			int element;
+			scanf("%d", &element);
+			sRoot = push(sRoot, element);
+		} else if (option == 2) {
+			int popped = 0;
+			sRoot = pop(sRoot, &popped);
 			
-			Stack *sRoot = NULL;
-			puts("Введите элементы списка:");
-			for (size_t i = 0; i < n; i++) {
-				int currentElement;
-				scanf("%d", &currentElement);
-				
-				sRoot = push(sRoot, currentElement);
-			}
-			
-			Stack *elementsBetween1stAndMin = getNext(sRoot);
-			Stack *minElement = findMin(&sRoot);
-			Stack *elementBeforeMin = getElementBefore(&sRoot, minElement);
-			Stack *elementsRemaining = sRoot;
-			
-			if (minElement == sRoot || minElement == getNext(sRoot)) {
-				elementsBetween1stAndMin = NULL;
+			printf("Удалённый элемент: %d\n", popped);
+		} else if (option == 3) {
+			printf("Стек: ");
+			print(&sRoot);
+		} else if (option == 4) {
+			if (sRoot == NULL) {
+				puts("Решение индивидуального задания невозможно. "
+					 "Добавьте элементы в стек.");
 			} else {
-				setNext(sRoot, minElement);
-				setNext(elementBeforeMin, NULL);
-			}
-			
-			puts("Элементы стека, содержащего элементы между вершиной и минимальным элементом стека:");
-			while (!isEmpty(elementsBetween1stAndMin)) {
-				int currentElementValue = 0;
-				elementsBetween1stAndMin = pop(elementsBetween1stAndMin, &currentElementValue);
+				Stack *auxS = NULL;
+				reversedCopy(&sRoot, &auxS);
 				
-				printf("%d ", currentElementValue);
-			}
-			
-			puts("\nЭлементы стека, в котором нет таких элементов");
-			while (!isEmpty(elementsRemaining)) {
-				int currentElementValue = 0;
-				elementsRemaining = pop(elementsRemaining, &currentElementValue);
+				Stack *elementsBetween1stAndMin = getNext(sRoot);
+				Stack *minElement = findMin(&sRoot);
+				Stack *elementBeforeMin = getElementBefore(&sRoot, minElement);
+				Stack *elementsRemaining = sRoot;
 				
-				printf("%d ", currentElementValue);
+				if (minElement == sRoot || minElement == getNext(sRoot)) {
+					elementsBetween1stAndMin = NULL;
+				} else {
+					setNext(sRoot, minElement);
+					setNext(elementBeforeMin, NULL);
+				}
+				
+				puts("Элементы стека, содержащего элементы между вершиной и минимальным элементом стека:");
+				while (!isEmpty(elementsBetween1stAndMin)) {
+					int currentElementValue = 0;
+					elementsBetween1stAndMin = pop(elementsBetween1stAndMin, &currentElementValue);
+					
+					printf("%d ", currentElementValue);
+				}
+				
+				puts("\nЭлементы стека, в котором нет таких элементов");
+				while (!isEmpty(elementsRemaining)) {
+					int currentElementValue = 0;
+					elementsRemaining = pop(elementsRemaining, &currentElementValue);
+					
+					printf("%d ", currentElementValue);
+				}
+				puts("");
+				
+				clear(&elementsBetween1stAndMin);
+				clear(&elementsRemaining);
+				
+				sRoot = NULL;
+				while (!isEmpty(auxS)) {
+					int currentAuxValue = 0;
+					auxS = pop(auxS, &currentAuxValue);
+					
+					sRoot = push(sRoot, currentAuxValue);
+				}
 			}
-			puts("");
-			
-			clear(&elementsBetween1stAndMin);
-			clear(&elementsRemaining);
 		}
 	}
 	
