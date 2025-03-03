@@ -1,15 +1,11 @@
 #ifndef TREE_H
-#define TREE_H
-
-typedef struct Node Node;
+#define TREE_H 1
 
 typedef struct Tree {
-	Node *root;
+	struct Node *root;
 } Tree;
 
 void initialize(Tree *);
-
-const char * find(Tree, int);
 
 void insert(Tree *, int, const char *);
 

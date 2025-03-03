@@ -1,5 +1,5 @@
 #ifndef LAB_H
-#define LAB_H
+#define LAB_H 1
 
 #include <stdlib.h>
 
