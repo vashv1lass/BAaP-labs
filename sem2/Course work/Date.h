@@ -1,14 +1,14 @@
 #ifndef DATE_H
 #define DATE_H 1
 
-#include <wchar.h>
-
-typedef struct Date {
+typedef struct date {
 	int day;
 	int month;
 	int year;
-} Date;
+} date;
 
-Date getDate(const wchar_t *);
+date get_date(const char *);
+
+int datecmp(date, date);
 
 #endif // DATE_H

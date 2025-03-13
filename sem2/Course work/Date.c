@@ -1,80 +1,45 @@
-#include "Date.h"
+#include "date.h"
 
-#include "Auxiliary.h"
+#include "auxiliary.h"
 
-#include <stdbool.h>
-#include <wctype.h>
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
+#include <stdlib.h> // strtol, free
 
-bool dateFormatIsValid_(const wchar_t *dateStr) {
-	if (wcslen(dateStr) == 10) {
-		return (
-				iswdigit(dateStr[0]) && iswdigit(dateStr[1]) &&
-				dateStr[2] == L'.' &&
-				iswdigit(dateStr[3]) && iswdigit(dateStr[4]) &&
-				dateStr[5] == L'.' &&
-				(iswdigit(dateStr[6]) && iswdigit(dateStr[7]) &&
-				 iswdigit(dateStr[8]) && iswdigit(dateStr[9]))
-		);
-	}
-	return false;
-}
-
-bool isLeap_(int year) {
-	return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-}
-
-bool dateIsValid_(Date date) {
-	int daysCount[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-	if (isLeap_(date.year)) {
-		daysCount[1] = 29;
-	}
-
-	if (!(1 <= date.month && date.month <= 12)) {
-		return false;
-	}
-	return date.day <= daysCount[date.month - 1];
-}
-
-Date getDate(const wchar_t *dateStr) {
-	Date d;
-	d.day = 0;
-	d.month = 0;
-	d.year = 0;
-
-	if (!dateFormatIsValid_(dateStr)) {
-		fwprintf(
-			stderr,
-			L"The string of \"%ls\" is not a date in DD.MM.YYYY format!\n",
-			dateStr
-		);
-		errno = EINVAL;
-		
-		return d;
-	}
-
-	wchar_t *dayStr = subwcs(dateStr, 0, 2);
-	wchar_t *monthStr = subwcs(dateStr, 3, 2);
-	wchar_t *yearStr = subwcs(dateStr, 6, 4);
-
-	d.day = (int)wcstol(dayStr, NULL, 10);
-	d.month = (int)wcstol(monthStr, NULL, 10);
-	d.year = (int)wcstol(yearStr, NULL, 10);
-
-	free(dayStr);
-	free(monthStr);
-	free(yearStr);
-
-	if (!dateIsValid_(d)) {
-		fwprintf(stderr, L"The date of %ls does not exist!\n", dateStr);
-		errno = EINVAL;
-
-		d.day = 0;
-		d.month = 0;
-		d.year = 0;
-	}
-
+date get_date(const char * date_str) {
+	date d;
+	
+	char * day_str = substr(date_str, 0, 2);
+	char * month_str = substr(date_str, 3, 2);
+	char * year_str = substr(date_str, 6, 4);
+	
+	d.day = (int)strtol(day_str, NULL, 10);
+	d.month = (int)strtol(month_str, NULL, 10);
+	d.year = (int)strtol(year_str, NULL, 10);
+	
+	free(day_str);
+	free(month_str);
+	free(year_str);
+	
 	return d;
+}
+
+int datecmp(date lhs, date rhs) {
+	if (lhs.year < rhs.year) {
+		return -1;
+	} else if (lhs.year > rhs.year) {
+		return 1;
+	}
+	
+	if (lhs.month < rhs.month) {
+		return -1;
+	} else if (lhs.month > rhs.month) {
+		return 1;
+	}
+	
+	if (lhs.day < rhs.day) {
+		return -1;
+	} else if (lhs.day > rhs.day) {
+		return 1;
+	}
+	
+	return 0;
 }

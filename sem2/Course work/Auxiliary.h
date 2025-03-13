@@ -1,12 +1,20 @@
 #ifndef AUXILIARY_H
 #define AUXILIARY_H 1
 
-#include <wchar.h>
-#include <stdlib.h>
+#include <stddef.h>
 
+#define NOTHING (void)0
+#define STRING_BUFFER_MAX_SIZE (size_t)(1024)
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define VERIFY(condition, return_value, errno_code) \
+	if (!(condition)) {                         \
+		errno = (errno_code);               \
+		return (return_value);              \
+        }                                           \
+	NOTHING                                     \
 
-wchar_t * subwcs(const wchar_t *, size_t, size_t);
-wchar_t * subwcsPtr(const wchar_t *, const wchar_t *);
+char * substr(const char *, size_t, size_t);
+
+double doublecmp(double, double);
 
 #endif // AUXILIARY_H

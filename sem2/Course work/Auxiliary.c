@@ -1,22 +1,35 @@
-#include "Auxiliary.h"
+#include "auxiliary.h"
 
-#include <wchar.h>
-#include <stdlib.h>
-#include <limits.h>
+#include <stddef.h> // size_t
+#include <stdlib.h> // calloc
+#include <string.h> // strlen, strncpy
+#include <errno.h>  // errno + errno codes
+#include <math.h>   // fabs
 
-wchar_t * subwcs(const wchar_t *str, size_t pos, size_t len) {
-	len = MIN(len, wcslen(str) - pos);
+char * substr(const char * str, size_t pos, size_t len) {
+	const size_t str_length = strlen(str);
 	
-	wchar_t *substring = malloc((len + 1) * sizeof(wchar_t));
-	wcsncpy(substring, str + pos, len);
+	len = MIN(len, str_length - pos);
+	if (pos > str_length) {
+		errno = ERANGE;
+		return NULL;
+	}
+	
+	char * substring = (char *)calloc(len + 1, sizeof(char));
+	if (substring == NULL) {
+		errno = ENOMEM;
+		return NULL;
+	}
+	
+	strncpy(substring, str + pos, len);
 	substring[len] = '\0';
 	
 	return substring;
 }
 
-wchar_t * subwcsPtr(const wchar_t *first, const wchar_t *last) {
-	if (last == NULL) {
-		return subwcs(first, 0, SIZE_T_MAX);
+double doublecmp(double lhs, double rhs) {
+	if (fabs(lhs - rhs) < 1e-4) {
+		return .0;
 	}
-	return subwcs(first, 0, last - first + 1);
+	return lhs - rhs;
 }
