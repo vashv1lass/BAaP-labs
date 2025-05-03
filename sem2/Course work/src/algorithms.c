@@ -204,6 +204,10 @@
              left = middle + 1;
          } else if (compare_result > 0) {
              // If greater, then right bound needs to be set to middle.
+             if (middle == 0) {
+                 break;
+             }
+             
              right = middle - 1;
          } else {
              // If equal, we found it!
@@ -553,10 +557,12 @@
              while (right >= array && right_and_pivot_comparison_result > 0) {
                  right = (void *)((uintptr_t)right - type_size);
                  
-                 right_and_pivot_comparison_result = compare((const void *)right, (const void *)pivot);
-                 if (errno != saved_errno) {
-                     // If a comparison error occurred, returning -1.
-                     return -1;
+                 if (right >= array) {
+                     right_and_pivot_comparison_result = compare((const void *) right, (const void *) pivot);
+                     if (errno != saved_errno) {
+                         // If a comparison error occurred, returning -1.
+                         return -1;
+                     }
                  }
              }
              

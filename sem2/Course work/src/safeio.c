@@ -195,20 +195,11 @@
          return EOF;
      }
      
-     // Saving the previous `errno` value.
-     int saved_errno = errno;
-     
      // Reading arguments from the buffer.
      va_list args;
      va_start(args, format);
      int parsed_count = vsscanf(buffer, format, args);
      va_end(args);
-     
-     // Checking if the parsing was successfully done.
-     if (parsed_count == EOF && errno == saved_errno) {
-         // If the format is incorrect and `errno` was not set, setting `errno` to EINVAL.
-         errno = EINVAL;
-     }
      
      // Returning the count of read values.
      return parsed_count;
@@ -288,7 +279,7 @@
      }
      
      // Checking the validity of file descriptor.
-     if (ferror(output_stream)) {
+     if (ferror(output_stream) != 0) {
          // If invalid, then terminating the function (setting `errno` to EBADF and returning EOF).
          errno = EBADF;
          return EOF;
@@ -310,28 +301,30 @@
  }
  
  /**
-  * @brief      Immediately writes formatted data to a stream with error handling.
+  * @brief     Formatted output with immediate buffer flush (vfprintf + fflush equivalent.
   *
-  * @details    The function performs the following steps:
-  *               - Validates input arguments (non-NULL `output_stream` and `formatted_str`).
-  *               - Uses `vfprintf()` to format and write data to the stream.
-  *               - Flushes the output buffer via `fflush()` (only on successful write) to ensure immediate visibility.
-  *               - Propagates I/O errors through `errno` for diagnostics.
-  *             Designed for scenarios requiring atomic write-and-flush operations (e.g., real-time logging).
+  * @details   The function performs the following steps:
+  *              - Validates input arguments (non-NULL `output_stream` and `formatted_str`, valid `output_stream`).
+  *              - Uses `vfprintf()` to format and write data to the stream.
+  *              - Flushes the output buffer via `fflush()` (only on successful write) to ensure immediate visibility.
+  *              - Propagates I/O errors through `errno` for diagnostics.
+  *            Designed for scenarios requiring atomic write-and-flush operations (e.g., real-time logging).
   *
-  * @param[in]  output_stream   Output stream (e.g., `stdout`, file handle).
-  * @param[in]  formatted_str   Format string with conversion specifiers (same as `printf()` family).
-  * @param[in]  ...             Variable arguments matching the format specifiers.
+  * @param[in] output_stream Output stream (must be valid, not NULL)
+  * @param[in] formatted_str Format string (must be valid, not NULL)
+  * @param[in] args          Variable arguments list for formatting
   *
-  * @errors     The function may fail and set `errno`:
-  *               - `EINVAL`: Invalid argument (`output_stream`/`formatted_str` is NULL or invalid format).
-  *               - `EIO`:    I/O error during `vfprintf()` or `fflush()`.
-  *               - Other errors from underlying system calls (e.g., `ENOSPC` for disk full).
+  * @errors    Sets errno to:
+  *              - `EINVAL`: Invalid arguments (NULL pointers).
+  *              - `EBADF`:  Invalid file descriptor.
+  *              - Other errors from `vfprintf()`/`fflush()`.
   *
-  * @returns    On success: Number of characters written (as returned by `vfprintf()`).
-  *             On failure: `EOF`, with `errno` set to indicate the error.
+  * @returns   Number of bytes written on success, EOF on error.
+  *
+  * @note      - Always flushes buffer after successful write
+  *            - Thread-unsafe due to errno usage.
   */
- int instant_fprintf(FILE *output_stream, const char *formatted_str, ...) {
+ int instant_vfprintf(FILE *output_stream, const char *formatted_str, va_list args) {
      // Checking the validity of the passed arguments.
      if (formatted_str == NULL || output_stream == NULL) {
          // If invalid, terminating the function (setting `errno` to EINVAL, returning EOF).
@@ -339,11 +332,15 @@
          return EOF;
      }
      
+     // Checking the validity of file descriptor.
+     if (ferror(output_stream) != 0) {
+         // If invalid, then terminating the function (setting `errno` to EBADF and returning EOF).
+         errno = EBADF;
+         return EOF;
+     }
+     
      // Writing info into output stream.
-     va_list args;
-     va_start(args, formatted_str);
      int vfprintf_result = vfprintf(output_stream, formatted_str, args);
-     va_end(args);
      
      if (vfprintf_result >= 0) {
          // If vfprintf was successfully done, trying to clear the output buffer.
@@ -355,4 +352,50 @@
      
      // Returning the `vfprintf()` result.
      return vfprintf_result;
+ }
+ 
+ /**
+  * @brief      Immediately writes formatted data to a stream with error handling.
+  *
+  * @details    The function performs the following steps:
+  *               - Validates input arguments (non-NULL `output_stream` and `formatted_str`, valid `output_stream`).
+  *               - Uses `instant_vfprintf()` to format and write data to the stream.
+  *               - Propagates I/O errors through `errno` for diagnostics.
+  *             Designed for scenarios requiring atomic write-and-flush operations (e.g., real-time logging).
+  *
+  * @param[in]  output_stream   Output stream (e.g., `stdout`, file handle).
+  * @param[in]  formatted_str   Format string with conversion specifiers (same as `printf()` family).
+  * @param[in]  ...             Variable arguments matching the format specifiers.
+  *
+  * @errors     The function may fail and set `errno`:
+  *               - `EINVAL`:     Invalid argument (`output_stream`/`formatted_str` is NULL or invalid format).
+  *               - `EBADF`:      Invalid file descriptor.
+  *               - Other errors: Errors during `instant_vfprintf()`, errors from underlying system calls.
+  *
+  * @returns    On success: Number of characters written (as returned by `instant_vfprintf()`).
+  *             On failure: `EOF`, with `errno` set to indicate the error.
+  */
+ int instant_fprintf(FILE *output_stream, const char *formatted_str, ...) {
+     // Checking the validity of the passed arguments.
+     if (formatted_str == NULL || output_stream == NULL) {
+         // If invalid, terminating the function (setting `errno` to EINVAL, returning EOF).
+         errno = EINVAL;
+         return EOF;
+     }
+     
+     // Checking the validity of file descriptor.
+     if (ferror(output_stream) != 0) {
+         // If invalid, then terminating the function (setting `errno` to EBADF and returning EOF).
+         errno = EBADF;
+         return EOF;
+     }
+     
+     // Writing info into output stream.
+     va_list args;
+     va_start(args, formatted_str);
+     int instant_vfprintf_result = instant_vfprintf(output_stream, formatted_str, args);
+     va_end(args);
+     
+     // Returning the `instant_vfprintf()` result.
+     return instant_vfprintf_result;
  }

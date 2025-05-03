@@ -41,6 +41,9 @@
  // Prints a formatted date to a file stream.
  int fprint_date(FILE *, date);
  
+ /// Works same as `fscan_date()` but the input stream is `stdin`.
+ #define scan_date(d)  fscan_date(stdin, d)
+ 
  // Compares two dates to determine their relative order.
  int datecmp(date, date);
  

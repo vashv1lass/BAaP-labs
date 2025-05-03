@@ -55,6 +55,9 @@
  // Prints apartment details to a file stream in localized format.
  int fprint_apartment(FILE *, apartment);
  
+ /// Works same as `fprint_apartment()`, but output stream is `stdout`.
+ #define print_apartment(apt) fprint_apartment(stdout, apt)
+ 
  // Checks if an apartment's ID matches a specified target value.
  bool id_match(const void *, va_list);
  // Compares two apartment objects by their ID.

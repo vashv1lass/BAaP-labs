@@ -28,9 +28,8 @@
   *                        Set to `(size_t)-1` on error or `0` for empty files.
   *
   * @errors     The function may fail and set `errno` to:
-  *               - EINVAL: \p filename or \p array_size is NULL.
+  *               - EINVAL: \p filename or \p array_size is NULL, file size not a multiple of `sizeof(apartment)`.
   *               - ENOMEM: Memory allocation failed (via `read_binary_file()`).
-  *               - EILSEQ: File size not a multiple of `sizeof(apartment)`.
   *               - Errors from `read_binary_file()` (e.g., ENOENT, EFBIG).
   *
   * @returns    Pointer to the allocated array of `apartment` structures on success.
@@ -67,10 +66,10 @@
      if (file_size % sizeof(apartment) != 0) {
          /*
           * If not, terminating the function
-          * (setting array size to special `(size_t)-1` value, setting `errno` to EILSEQ and returning NULL)
+          * (setting array size to special `(size_t)-1` value, setting `errno` to EINVAL and returning NULL)
           */
          *array_size = (size_t)-1;
-         errno = EILSEQ;
+         errno = EINVAL;
          return NULL;
      }
      

@@ -25,7 +25,19 @@
  
  // Writes a string to a stream with immediate flushing and error checking.
  int instant_fputs(const char *, FILE *);
+ // Formatted output with immediate buffer flush (vfprintf + fflush equivalent).
+ int instant_vfprintf(FILE *, const char *, va_list);
  // Immediately writes formatted data to a stream with error handling.
  int instant_fprintf(FILE *, const char *, ...);
+ 
+ /// Works same as `safe_fgets()`, but the input stream is `stdin`.
+ #define safe_gets(buffer, buffer_size) safe_fgets(buffer, buffer_size, stdin)
+ /// Works same as `safe_fscanf()`, but the input stream is `stdin`.
+ #define safe_scanf(format, ...)        safe_fscanf(stdin, format, __VA_ARGS__)
+ 
+ /// Works same as `instant_fputs()`, but the output stream is `stdout`.
+ #define instant_puts(str)                  instant_fputs(str, stdout)
+ /// Works same as `instant_fprintf()`, but the output stream is `stdout`.
+ #define instant_printf(formatted_str, ...) instant_fprintf(stdout, formatted_str, __VA_ARGS__)
  
  #endif // SAFEIO_H
