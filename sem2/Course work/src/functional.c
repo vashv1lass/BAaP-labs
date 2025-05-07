@@ -615,6 +615,8 @@
      // Trying to sort the array by addition date.
      if (quicksort(matching_apartments, *found_apartments_count, sizeof(apartment), apt_addition_date_compare) == -1) {
          // If sort failed, returning NULL (errno is set).
+         free(matching_apartments);
+         *found_apartments_count = (size_t)-1;
          return NULL;
      }
      
