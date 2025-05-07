@@ -41,6 +41,7 @@
      // Checking if the file opening was successful.
      if (log_fp == NULL) {
          instant_fputs("Ошибка инициализации файла для логирования!\n", stderr);
+         errno = saved_errno;
          return;
      }
      
