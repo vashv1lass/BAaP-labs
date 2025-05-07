@@ -24,4 +24,7 @@
  // Logs binary file inspection details with a formatted message.
  void log_binary_file_state(const char *, const char *, ...);
  
+ // Outputs log file contents to a specified stream with error handling.
+ void view_log_file(FILE *);
+ 
  #endif // LOGGING_H

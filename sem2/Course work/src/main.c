@@ -54,6 +54,7 @@
              "10 - Сортировка квартир по дате добавления (сортировка вставками).\n"
              "11 - Поиск квартир по диапазону стоимости и количеству комнат.\n"
              "12 - Поиск свободных квартир, добавленных после определённой даты.\n"
+             "13 - Просмотр файла логирования.\n"
              "Любое другое число - выход из программы.\n"
          );
          int option;
@@ -71,9 +72,18 @@
          // Logging the users choice.
          log_current_state("Меню: была выбрана опция \"%d\".", option);
          
-         if (!(1 <= option && option <= 12)) {
+         if (!(1 <= option && option <= 13)) {
              // If the user chose the exit option, getting out from the cycle.
              break;
+         }
+         
+         // If the option is viewing the log file.
+         if (option == 13) {
+             // Logging the option execution, then viewing the log file.
+             log_current_state("Содержимое файла логирования выводится в поток \"stderr\".");
+             view_log_file(stderr);
+             
+             continue;
          }
          
          // Input filename.

@@ -338,3 +338,66 @@
      // Restoring the previous errno value.
      errno = saved_errno;
  }
+ 
+ /**
+  * @brief      Outputs log file contents to a specified stream with error handling.
+  *
+  * @details    This function reads the log file and writes its contents character-by-character
+  *             to the provided output stream. It validates input arguments and stream state, handles file I/O errors,
+  *             and preserves the original `errno` value throughout execution.
+  *
+  * @param[in]  output_stream  The output stream to write to (must be valid and writable).
+  *
+  * @errors     Outputs to `stderr` on failure:
+  *               - "Ошибка: аргумент функции..." if `output_stream` is NULL.
+  *               - "Ошибка: файловый поток..." if `output_stream` has pre-existing errors (`ferror()` != 0).
+  *               - "Ошибка открытия файла..." if `fopen(LOG_FILE_NAME)` fails.
+  *               - "Ошибка вывода файла..." if writing to `output_stream` fails (`ferror()` != 0 after output).
+  *               - "Ошибка закрытия файла..." if `fclose()` fails.
+  *
+  * @note       - Thread-unsafe: Relies on global `errno` and non-atomic file operations.
+  */
+ void view_log_file(FILE *output_stream) {
+     // Saving the errno value.
+     int saved_errno = errno;
+     
+     // Validating the output_stream argument.
+     if (output_stream == NULL) {
+         instant_fputs("Ошибка: аргумент функции watch_log_file является нулевым указателем!\n", stderr);
+         errno = saved_errno;
+         return;
+     }
+     
+     // Checking the output stream for errors.
+     if (ferror(output_stream) != 0) {
+         instant_fputs("Ошибка: файловый поток, переданный в функцию watch_log_file повреждён!\n", stderr);
+         errno = saved_errno;
+         return;
+     }
+     
+     // Trying to open the file.
+     FILE *log_fp = fopen(LOG_FILE_NAME, "r");
+     if (log_fp == NULL) {
+         instant_fputs("Ошибка открытия файла логирования!\n", stderr);
+         errno = saved_errno;
+         return;
+     }
+     
+     // Outputting the file content char-by-char.
+     for (int current_char; (current_char = fgetc(log_fp)) != EOF; ) {
+         instant_fprintf(output_stream, "%c", current_char);
+     }
+     
+     // Checking the output stream for errors.
+     if (ferror(output_stream) != 0) {
+         instant_fputs("Ошибка вывода файла в поток!\n", stderr);
+     }
+     
+     // Trying to close the file.
+     if (fclose(log_fp) == EOF) {
+         instant_fputs("Ошибка закрытия файла для логирования!\n", stderr);
+     }
+     
+     // Restoring errno.
+     errno = saved_errno;
+ }
