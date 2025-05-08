@@ -96,6 +96,26 @@
  }
  
  /**
+  * @brief      Compares two apartments using the `apt_addition_date_compare()` function for sorting from new to old.
+  *
+  * @param[in]  apt_left   Pointer to the first apartment (must not be NULL and must be valid).
+  * @param[in]  apt_right  Pointer to the second apartment (must not be NULL and must be valid).
+  *
+  * @errors     See `apt_addition_date_compare()` documentation.
+  *
+  * @returns    - Negative value if `apt_left->addition_date` is later than `apt_right->addition_date`.
+  *             - Zero if `apt_left->addition_date` is equal to `apt_right->addition_date`.
+  *             - Positive value if `apt_left->addition_date` is earlier than `apt_right->addition_date`.
+  *             - INT_MIN: Error occurred (check `errno` for details).
+  *
+  * @note.      - Thread-unsafe due to `errno` usage.
+  */
+ static int apt_addition_date_compare_reversed(const void *apt_left, const void *apt_right) {
+     // Returning the opposite value of `apr_addition_date_compare`.
+     return -apt_addition_date_compare(apt_left, apt_right);
+ }
+ 
+ /**
   * @brief      Creates a file with overwrite capability in case of name conflicts.
   *
   * @details    The function attempts to create a file while saving the original `errno` state.
@@ -613,10 +633,13 @@
      }
      
      // Trying to sort the array by addition date.
-     if (quicksort(matching_apartments, *found_apartments_count, sizeof(apartment), apt_addition_date_compare) == -1) {
+     if (quicksort(
+             matching_apartments,
+             *found_apartments_count,
+             sizeof(apartment),
+             apt_addition_date_compare_reversed
+         ) == -1) {
          // If sort failed, returning NULL (errno is set).
-         free(matching_apartments);
-         *found_apartments_count = (size_t)-1;
          return NULL;
      }
      

@@ -17,6 +17,8 @@
  static bool cost_range_and_rooms_count_match(const void *, va_list);
  // Predicate function to check if an apartment is added after a target date and is not sold.
  static bool later_than_date_and_free_status_match(const void *, va_list);
+ // Compares two apartments using the `apt_addition_date_compare()` function for sorting from new to old.
+ static int apt_addition_date_compare_reversed(const void *, const void *);
  
  // Creates a file with overwrite capability in case of name conflicts.
  int create_file(const char *);
