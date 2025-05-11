@@ -543,207 +543,207 @@ static int swap(void *a, void *b, size_t type_size) {
  *             - Not thread-safe due to reliance on `errno`.
  */
 int quicksort(void *array, size_t size, size_t type_size, compare_func_t compare) {
-    // Checking if the arguments (array, type_size and compare) are valid.
-    if (array == NULL || type_size == 0 || compare == NULL) {
-        // If not, interrupting the function (setting errno to EINVAL and returning -1).
-        errno = EINVAL;
-        return -1;
-    }
-    
-    // Checking if the total array size does not exceed the system limits (SIZE_MAX).
-    if (size > SIZE_MAX / type_size) {
-        /*
-         * If exceeds, interrupting the function
-         * (setting errno to EOVERFLOW, and returning -1).
-         */
-        errno = EOVERFLOW;
-        return -1;
-    }
-    
-    if (size <= 1) {
-        // If the size is 1 or less, the array is already sorted.
-        return 0;
-    }
-    
-    // Creating a stack to store the boundaries of the current segments.
-    size_t range_stack_capacity = 64;
-    size_t *range_stack = malloc(range_stack_capacity * 2 * sizeof(size_t));
-    if (range_stack == NULL) {
-        // If the stack allocation wasn't successful, interrupting the function (setting errno to ENOMEM, returning -1).
-        errno = ENOMEM;
-        return -1;
-    }
-    
-    // Starting with the whole array.
-    size_t range_stack_top = 0;
-    range_stack[range_stack_top++] = 0;
-    range_stack[range_stack_top++] = size - 1;
-    
-    // Sorting.
-    while (range_stack_top > 0) {
-        // Getting the boundaries of the current segment.
-        size_t high = range_stack[--range_stack_top];
-        size_t low = range_stack[--range_stack_top];
-        
-        if (low < high) {
-            // Middle element index.
-            size_t mid = low + (high - low) / 2;
-            
-            // Left, right and middle elements' pointers.
-            void *low_ptr = (void *)((uintptr_t)array + low * type_size);
-            void *mid_ptr = (void *)((uintptr_t)array + mid * type_size);
-            void *high_ptr = (void *)((uintptr_t)array + high * type_size);
-            
-            // Comparing all the elements between each other.
-            int saved_errno = errno;
-            int cmp_low_mid = compare((const void *)low_ptr, (const void *)mid_ptr);
-            if (errno != saved_errno) {
-                // If the comparison went wrong, terminating the function (deallocating the stack, returning -1).
-                free(range_stack);
-                return -1;
-            }
-            
-            saved_errno = errno;
-            int cmp_low_high = compare((const void *)low_ptr, (const void *)high_ptr);
-            if (errno != saved_errno) {
-                // Similarly.
-                free(range_stack);
-                return -1;
-            }
-            
-            saved_errno = errno;
-            int cmp_mid_high = compare((const void *)mid_ptr, (const void *)high_ptr);
-            if (errno != saved_errno) {
-                // Similarly.
-                free(range_stack);
-                return -1;
-            }
-            
-            // Getting a median of low, middle and high elements.
-            void *median = high_ptr;
-            if (cmp_low_mid < 0) {
-                // low < mid.
-                if (cmp_mid_high < 0) {
-                    // mid < high, mid is a median.
-                    median = mid_ptr;
-                } else if (cmp_low_high >= 0) {
-                    // low >= high, low is a median.
-                    median = low_ptr;
-                }
-            } else {
-                // low >= mid;
-                if (cmp_mid_high > 0) {
-                    // mid > high, mid is a median.
-                    median = mid_ptr;
-                } else if (cmp_low_high <= 0) {
-                    // low <= high, low is a median.
-                    median = low_ptr;
-                }
-            }
-            
-            // Putting the median to the high position.
-            if (swap(median, high_ptr, type_size) == -1) {
-                free(range_stack);
-                return -1;
-            }
-            
-            // Getting the address of pivot element. It will be the rightmost element.
-            void *pivot = high_ptr;
-            
-            // Getting the addresses of left and right elements. The right element is the element before pivot.
-            void *left = low_ptr;
-            void *right = (void *)((uintptr_t)pivot - type_size);
-            
-            while (left <= right) {
-                // Looking for the leftmost element greater than or equal to pivot.
-                saved_errno = errno;
-                while (compare((const void *)left, (const void *)pivot) < 0) {
-                    if (errno != saved_errno) {
-                        free(range_stack);
-                        return -1;
-                    }
-                    
-                    left = (void *)((uintptr_t)left + type_size);
-                    
-                    if (left > right) {
-                        break;
-                    }
-                }
-                
-                // Looking for the rightmost element less than or equal to pivot.
-                saved_errno = errno;
-                while (right >= low_ptr && compare((const void *)right, (const void *)pivot) > 0) {
-                    if (errno != saved_errno) {
-                        free(range_stack);
-                        return -1;
-                    }
-                    
-                    right = (void *)((uintptr_t)right - type_size);
-                    
-                    if (right < low_ptr) {
-                        break;
-                    }
-                }
-                
-                // If left and right do not intersect, swap them.
-                if (left <= right) {
-                    if (swap(left, right, type_size) == -1) {
-                        // If `swap()` failed, returning -1.
-                        free(range_stack);
-                        return -1;
-                    }
-                    
-                    left = (void *)((uintptr_t)left + type_size);
-                    right = (void *)((uintptr_t)right - type_size);
-                }
-            }
-            
-            // Trying to put pivot in the right place.
-            if (swap(left, pivot, type_size) == -1) {
-                // If failure, interrupting the function (errno is already set, freeing the stack returning -1).
-                free(range_stack);
-                return -1;
-            }
-            
-            size_t pivot_pos = ((uintptr_t)left - (uintptr_t)array) / type_size;
-            
-            // Reallocating the stack if there is no memory remaining.
-            if (range_stack_top + 4 > range_stack_capacity * 2) {
-                size_t new_range_stack_capacity = range_stack_capacity * 2;
-                size_t *new_range_stack = (size_t *)realloc(
-                    range_stack,
-                    new_range_stack_capacity * 2 * sizeof(size_t)
-                );
-                if (new_range_stack == NULL) {
-                    free(range_stack);
-                    errno = ENOMEM;
-                    return -1;
-                }
-                range_stack = new_range_stack;
-                range_stack_capacity = new_range_stack_capacity;
-            }
-            
-            // Adding next ranges to stack (if need).
-            if (pivot_pos != 0 && pivot_pos != size - 1) {
-                if (pivot_pos - low > high - pivot_pos) {
-                    range_stack[range_stack_top++] = low;
-                    range_stack[range_stack_top++] = pivot_pos - 1;
-                    
-                    range_stack[range_stack_top++] = pivot_pos + 1;
-                    range_stack[range_stack_top++] = high;
-                } else {
-                    range_stack[range_stack_top++] = pivot_pos + 1;
-                    range_stack[range_stack_top++] = high;
-                    
-                    range_stack[range_stack_top++] = low;
-                    range_stack[range_stack_top++] = pivot_pos - 1;
-                }
-            }
-        }
-    }
-    
-    free(range_stack);
-    return 0;
+	// Checking if the arguments (array, type_size and compare) are valid.
+	if (array == NULL || type_size == 0 || compare == NULL) {
+		// If not, interrupting the function (setting errno to EINVAL and returning -1).
+		errno = EINVAL;
+		return -1;
+	}
+	
+	// Checking if the total array size does not exceed the system limits (SIZE_MAX).
+	if (size > SIZE_MAX / type_size) {
+		/*
+		 * If exceeds, interrupting the function
+		 * (setting errno to EOVERFLOW, and returning -1).
+		 */
+		errno = EOVERFLOW;
+		return -1;
+	}
+	
+	if (size <= 1) {
+		// If the size is 1 or less, the array is already sorted.
+		return 0;
+	}
+	
+	// Creating a stack to store the boundaries of the current segments.
+	size_t range_stack_capacity = 64;
+	size_t *range_stack = malloc(range_stack_capacity * 2 * sizeof(size_t));
+	if (range_stack == NULL) {
+		// If the stack allocation wasn't successful, interrupting the function (setting errno to ENOMEM, returning -1).
+		errno = ENOMEM;
+		return -1;
+	}
+	
+	// Starting with the whole array.
+	size_t range_stack_top = 0;
+	range_stack[range_stack_top++] = 0;
+	range_stack[range_stack_top++] = size - 1;
+	
+	// Sorting.
+	while (range_stack_top > 0) {
+		// Getting the boundaries of the current segment.
+		size_t high = range_stack[--range_stack_top];
+		size_t low = range_stack[--range_stack_top];
+		
+		if (low < high) {
+			// Middle element index.
+			size_t mid = low + (high - low) / 2;
+			
+			// Left, right and middle elements' pointers.
+			void *low_ptr = (void *)((uintptr_t)array + low * type_size);
+			void *mid_ptr = (void *)((uintptr_t)array + mid * type_size);
+			void *high_ptr = (void *)((uintptr_t)array + high * type_size);
+			
+			// Comparing all the elements between each other.
+			int saved_errno = errno;
+			int cmp_low_mid = compare((const void *)low_ptr, (const void *)mid_ptr);
+			if (errno != saved_errno) {
+				// If the comparison went wrong, terminating the function (deallocating the stack, returning -1).
+				free(range_stack);
+				return -1;
+			}
+			
+			saved_errno = errno;
+			int cmp_low_high = compare((const void *)low_ptr, (const void *)high_ptr);
+			if (errno != saved_errno) {
+				// Similarly.
+				free(range_stack);
+				return -1;
+			}
+			
+			saved_errno = errno;
+			int cmp_mid_high = compare((const void *)mid_ptr, (const void *)high_ptr);
+			if (errno != saved_errno) {
+				// Similarly.
+				free(range_stack);
+				return -1;
+			}
+			
+			// Getting a median of low, middle and high elements.
+			void *median = high_ptr;
+			if (cmp_low_mid < 0) {
+				// low < mid.
+				if (cmp_mid_high < 0) {
+					// mid < high, mid is a median.
+					median = mid_ptr;
+				} else if (cmp_low_high >= 0) {
+					// low >= high, low is a median.
+					median = low_ptr;
+				}
+			} else {
+				// low >= mid;
+				if (cmp_mid_high > 0) {
+					// mid > high, mid is a median.
+					median = mid_ptr;
+				} else if (cmp_low_high <= 0) {
+					// low <= high, low is a median.
+					median = low_ptr;
+				}
+			}
+			
+			// Putting the median to the high position.
+			if (swap(median, high_ptr, type_size) == -1) {
+				free(range_stack);
+				return -1;
+			}
+			
+			// Getting the address of pivot element. It will be the rightmost element.
+			void *pivot = high_ptr;
+			
+			// Getting the addresses of left and right elements. The right element is the element before pivot.
+			void *left = low_ptr;
+			void *right = (void *)((uintptr_t)pivot - type_size);
+			
+			while (left <= right) {
+				// Looking for the leftmost element greater than or equal to pivot.
+				saved_errno = errno;
+				while (compare((const void *)left, (const void *)pivot) < 0) {
+					if (errno != saved_errno) {
+						free(range_stack);
+						return -1;
+					}
+					
+					left = (void *)((uintptr_t)left + type_size);
+					
+					if (left > right) {
+						break;
+					}
+				}
+				
+				// Looking for the rightmost element less than or equal to pivot.
+				saved_errno = errno;
+				while (right >= low_ptr && compare((const void *)right, (const void *)pivot) > 0) {
+					if (errno != saved_errno) {
+						free(range_stack);
+						return -1;
+					}
+					
+					right = (void *)((uintptr_t)right - type_size);
+					
+					if (right < low_ptr) {
+						break;
+					}
+				}
+				
+				// If left and right do not intersect, swap them.
+				if (left <= right) {
+					if (swap(left, right, type_size) == -1) {
+						// If `swap()` failed, returning -1.
+						free(range_stack);
+						return -1;
+					}
+					
+					left = (void *)((uintptr_t)left + type_size);
+					right = (void *)((uintptr_t)right - type_size);
+				}
+			}
+			
+			// Trying to put pivot in the right place.
+			if (swap(left, pivot, type_size) == -1) {
+				// If failure, interrupting the function (errno is already set, freeing the stack returning -1).
+				free(range_stack);
+				return -1;
+			}
+			
+			size_t pivot_pos = low + ((uintptr_t)left - (uintptr_t)low_ptr) / type_size;
+			
+			// Reallocating the stack if there is no memory remaining.
+			if (range_stack_top + 4 > range_stack_capacity * 2) {
+				size_t new_range_stack_capacity = range_stack_capacity * 2;
+				size_t *new_range_stack = (size_t *)realloc(
+					range_stack,
+					new_range_stack_capacity * 2 * sizeof(size_t)
+				);
+				if (new_range_stack == NULL) {
+					free(range_stack);
+					errno = ENOMEM;
+					return -1;
+				}
+				range_stack = new_range_stack;
+				range_stack_capacity = new_range_stack_capacity;
+			}
+			
+			// Adding next ranges to stack (if need).
+			if (pivot_pos != 0 && pivot_pos != size - 1) {
+				if (pivot_pos - low > high - pivot_pos) {
+					range_stack[range_stack_top++] = low;
+					range_stack[range_stack_top++] = pivot_pos - 1;
+					
+					range_stack[range_stack_top++] = pivot_pos + 1;
+					range_stack[range_stack_top++] = high;
+				} else {
+					range_stack[range_stack_top++] = pivot_pos + 1;
+					range_stack[range_stack_top++] = high;
+					
+					range_stack[range_stack_top++] = low;
+					range_stack[range_stack_top++] = pivot_pos - 1;
+				}
+			}
+		}
+	}
+	
+	free(range_stack);
+	return 0;
 }
 
 /**
