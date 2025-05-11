@@ -521,7 +521,7 @@ static int swap(void *a, void *b, size_t type_size) {
 /**
  * @brief      Sorts an array using the quicksort algorithm.
  *
- * @details    This function implements a recursive quicksort algorithm. It selects a pivot element,
+ * @details    This function implements an iterative quicksort algorithm. It selects a pivot element,
  *             partitions the array into sub-arrays, and sorts them. Uses `swap()` for element exchange.
  *
  * @param[in,out] array     Pointer to the array to sort (must not be NULL).
@@ -567,7 +567,7 @@ int quicksort(void *array, size_t size, size_t type_size, compare_func_t compare
 	
 	// Creating a stack to store the boundaries of the current segments.
 	size_t range_stack_capacity = 64;
-	size_t *range_stack = malloc(range_stack_capacity * 2 * sizeof(size_t));
+	size_t *range_stack = (size_t *)malloc(range_stack_capacity * 2 * sizeof(size_t));
 	if (range_stack == NULL) {
 		// If the stack allocation wasn't successful, interrupting the function (setting errno to ENOMEM, returning -1).
 		errno = ENOMEM;
