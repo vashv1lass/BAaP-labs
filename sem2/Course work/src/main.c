@@ -6,7 +6,7 @@
 #include <stdio.h>   // For `puts()`, `printf()`, etc.
 #include <stdbool.h> // For `true`.
 #include <string.h>  // For `strcpy()`, `strcmp()`.
-#include <stdlib.h>  // For `free()`.
+#include <stdlib.h>  // For `free()`, EXIT_SUCCESS.
 #include <errno.h>   // For `errno`.
 
 #include "safeio.h"      // For `safe_scanf()`, `instant_puts()`, etc.
@@ -66,7 +66,7 @@ int main(void) {
                 "Проверьте файл \"%s\" для подробностей.\n",
                 LOG_FILE_NAME
             );
-            log_current_state("Меню: попытка ввода опции завершилась с ошибкой.\n\n");
+            log_current_state("Меню: попытка ввода опции завершилась с ошибкой.");
             continue;
         }
         // Logging the users choice.
@@ -871,6 +871,17 @@ int main(void) {
                     "ввод верхней границы стоимости завершился успешно."
                 );
                 
+                // Checking the cost range.
+                if (apartment_cost_to_find_low > apartment_cost_to_find_high) {
+                    // If invalid, logging and terminating current operation.
+                    printf("\nОшибка. Неверный диапазон.\n");
+                    log_current_state(
+                        "Поиск по признаку (диапазон стоимости и количество комнат): "
+                        "ввод диапазона стоимости завершился с ошибкой (верхняя граница стоимости меньше нижней)."
+                    );
+                    break;
+                }
+                
                 // Similarly.
                 instant_puts("Введите количество комнат в квартирах, информацию о которых вы хотите найти: ");
                 int apartment_rooms_count_to_find;
@@ -966,7 +977,7 @@ int main(void) {
                 if (scan_date(&apartment_addition_date_to_find) != 1) {
                     // If failed, logging the error, terminating the current operation.
                     printf(
-                        "\nОшибка ввода. Вероятно, введено некорректное значение."
+                        "\nОшибка ввода. Вероятно, введено некорректное значение.\n"
                         "Подробнее: см. файл \"%s\".\n",
                         LOG_FILE_NAME
                     );
@@ -1052,5 +1063,5 @@ int main(void) {
     instant_puts("\nРабота программы завершена.\n");
     log_current_state("Работа программы была завершена.");
     
-    return 0;
+    return EXIT_SUCCESS;
 }
