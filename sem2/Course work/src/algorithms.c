@@ -849,50 +849,50 @@ int selection_sort(void *array, size_t size, size_t type_size, compare_func_t co
  *             - Not thread-safe due to `errno` usage
  */
 int insertion_sort(void *array, size_t size, size_t type_size, compare_func_t compare) {
-    // Checking if the arguments (array, type_size and compare) are valid.
-    if (array == NULL || type_size == 0 || compare == NULL) {
-        // If not, interrupting the function (setting errno to EINVAL and returning NULL).
-        errno = EINVAL;
-        return -1;
-    }
-    
-    // Checking if the total array size does not exceed the system limits (SIZE_MAX).
-    if (size > SIZE_MAX / type_size) {
-        /*
-         * If exceeds, interrupting the function
-         * (setting errno to EOVERFLOW, and returning -1).
-         */
-        errno = EOVERFLOW;
-        return -1;
-    }
-    
-    for (size_t i = 1; i < size; i++) {
-        for (size_t j = i; j > 0; j--) {
-            // Getting the addresses of j-th and (j-1)-th element.
-            void *jth_element = (void *)((uintptr_t)array + j * type_size);
-            void *element_before_jth = (void *)((uintptr_t)array + (j - 1) * type_size);
-            
-            // Getting the comparison result.
-            int saved_errno = errno;
-            int compare_result = compare((const void *)element_before_jth, (const void *)jth_element);
-            if (saved_errno != errno) {
-                // If comparison failure, terminating the function (errno is set, returning -1).
-                return -1;
-            }
-            
-            if (compare_result < 0) {
-                // If (j-1)-th element is less than j-th, then we got to the sorted part of array.
-                break;
-            }
-            
-            // Trying to swap j-th and (j-1)-th elements.
-            if (swap(jth_element, element_before_jth, type_size) == -1) {
-                // If failure, interrupting the function (errno is already set, returning -1).
-                return -1;
-            }
-        }
-    }
-    
-    // Everything is ok, returning 0.
-    return 0;
+	// Checking if the arguments (array, type_size and compare) are valid.
+	if (array == NULL || type_size == 0 || compare == NULL) {
+		// If not, interrupting the function (setting errno to EINVAL and returning NULL).
+		errno = EINVAL;
+		return -1;
+	}
+	
+	// Checking if the total array size does not exceed the system limits (SIZE_MAX).
+	if (size > SIZE_MAX / type_size) {
+		/*
+		 * If exceeds, interrupting the function
+		 * (setting errno to EOVERFLOW, and returning -1).
+		 */
+		errno = EOVERFLOW;
+		return -1;
+	}
+	
+	for (size_t i = 1; i < size; i++) {
+		for (size_t j = i; j > 0; j--) {
+			// Getting the addresses of j-th and (j-1)-th element.
+			void *jth_element = (void *)((uintptr_t)array + j * type_size);
+			void *element_before_jth = (void *)((uintptr_t)array + (j - 1) * type_size);
+			
+			// Getting the comparison result.
+			int saved_errno = errno;
+			int compare_result = compare((const void *)element_before_jth, (const void *)jth_element);
+			if (saved_errno != errno) {
+				// If comparison failure, terminating the function (errno is set, returning -1).
+				return -1;
+			}
+			
+			if (compare_result <= 0) {
+				// If (j-1)-th element is less than or equal to j-th, then we got to the sorted part of array.
+				break;
+			}
+			
+			// Trying to swap j-th and (j-1)-th elements.
+			if (swap(jth_element, element_before_jth, type_size) == -1) {
+				// If failure, interrupting the function (errno is already set, returning -1).
+				return -1;
+			}
+		}
+	}
+	
+	// Everything is ok, returning 0.
+	return 0;
 }

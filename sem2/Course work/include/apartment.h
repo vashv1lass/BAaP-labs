@@ -19,34 +19,34 @@
 #define AREA_EPSILON           ((float)1e-1)
 
 /**
-* @brief Structure representing a real estate apartment entry.
-*
-* @details This structure stores comprehensive information about an apartment listing,
-* including identification, location, characteristics, financial data, and status.
-* All numerical fields (except boolean) must contain non-negative values.
-*/
+ * @brief Structure representing a real estate apartment entry.
+ *
+ * @details This structure stores comprehensive information about an apartment listing,
+ * including identification, location, characteristics, financial data, and status.
+ * All numerical fields (except boolean) must contain non-negative values.
+ */
 typedef struct apartment {
-/// Unique identifier of the apartment (non-negative integer, positive integer when in file).
-int id;
+    /// Unique identifier of the apartment (non-negative integer, positive integer when in file).
+    int id;
 
-/// Full address string (null-terminated, max length STRING_BUFFER_MAX_SIZE-1).
-char address[STRING_BUFFER_MAX_SIZE];
+    /// Full address string (null-terminated, max length STRING_BUFFER_MAX_SIZE-1).
+    char address[STRING_BUFFER_MAX_SIZE];
 
-/// Number of rooms in the apartment (positive integer).
-int rooms_count;
-/// Total area in square meters (positive value).
-float area;
-/// Floor number where the apartment is located (positive integer).
-int floor;
+    /// Number of rooms in the apartment (positive integer).
+    int rooms_count;
+    /// Total area in square meters (positive value).
+    float area;
+    /// Floor number where the apartment is located (positive integer).
+    int floor;
 
-/// Listing price in dollars (non-negative value).
-float cost;
+    /// Listing price in dollars (non-negative value).
+    float cost;
 
-/// Sales status (`true` - apartment is sold).
-bool sold;
+    /// Sales status (`true` - apartment is sold).
+    bool sold;
 
-/// Date when the apartment was added to the system.
-date addition_date;
+    /// Date when the apartment was added to the system.
+    date addition_date;
 } apartment;
 
 // Validates an apartment structure's fields with strict criteria.

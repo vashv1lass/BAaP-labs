@@ -11,15 +11,15 @@
 #include <stdio.h>   // For `FILE`.
 
 /**
-* @brief Structure representing a calendar date in Gregorian format.
-*
-* @details Stores day, month, and year components for date-related operations.
-*          All fields should contain valid calendar values within typical ranges.
-*/
+ * @brief Structure representing a calendar date in Gregorian format.
+ *
+ * @details Stores day, month, and year components for date-related operations.
+ *          All fields should contain valid calendar values within typical ranges.
+ */
 typedef struct date {
-int day;   /// Day of the month (1-31, exact range depends on month/year).
-int month; /// Month number (1 = January, 12 = December).
-int year;  /// Year (positive integer, typically 1900-2100 range, but can be other).
+    int day;   /// Day of the month (1-31, exact range depends on month/year).
+    int month; /// Month number (1 = January, 12 = December).
+    int year;  /// Year (positive integer, typically 1900-2100 range, but can be other).
 } date;
 
 /// Maximum string buffer size for date in `DD.MM.YYYY` format (includes '\\n' and '\0' symbols).
