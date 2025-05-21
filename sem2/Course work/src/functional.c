@@ -441,6 +441,9 @@ apartment * linear_search_by_cost(const char *filename, float cost, size_t *foun
     if (filename == NULL || cost < COST_EPSILON || found_apartments_count == NULL) {
         // If invalid, terminating the function (setting errno to EINVAL, returning NULL).
         errno = EINVAL;
+        if (found_apartments_count != NULL) {
+            *found_apartments_count = (size_t)-1;
+        }
         return NULL;
     }
     
@@ -511,6 +514,9 @@ apartment * binary_search_by_rooms_count(const char *filename, int rooms_count, 
     if (filename == NULL || rooms_count <= 0 || found_apartments_count == NULL) {
         // If not, terminating the function (setting errno to EINVAL, returning NULL).
         errno = EINVAL;
+        if (found_apartments_count != NULL) {
+            *found_apartments_count = (size_t)-1;
+        }
         return NULL;
     }
     
@@ -592,6 +598,9 @@ apartment * search_by_cost_range_and_rooms_count(const char *filename, float cos
         cost_left_border > cost_right_border || rooms_count < 0 || found_apartments_count == NULL) {
         // If invalid, terminating the function (setting errno to EINVAL, returning NULL).
         errno = EINVAL;
+        if (found_apartments_count != NULL) {
+            *found_apartments_count = (size_t)-1;
+        }
         return NULL;
     }
     
@@ -679,6 +688,9 @@ apartment * search_newest_free_apartments(const char *filename, const date earli
     if (filename == NULL || !date_is_valid(earliest_date) || found_apartments_count == NULL) {
         // If invalid, terminating the function (setting errno to EINVAL, returning NULL).
         errno = EINVAL;
+        if (found_apartments_count != NULL) {
+            *found_apartments_count = (size_t)-1;
+        }
         return NULL;
     }
     
